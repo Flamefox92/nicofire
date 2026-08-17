@@ -1,0 +1,35 @@
+# ─── Secrets & personal data (NEVER commit) ───────────────
+vault.json
+*.ncf
+nicofire-backup-*.json
+nicofire-encrypted-backup-*.ncf
+*.vault
+secrets/
+.env
+.env.*
+
+# ─── Rust / Tauri build output ────────────────────────────
+**/src-tauri/target/
+target/
+**/*.rs.bk
+
+# ─── Node ─────────────────────────────────────────────────
+**/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ─── Docker local data ────────────────────────────────────
+docker/data/
+
+# ─── OS / editor cruft ────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# ─── Build helper artifacts ───────────────────────────────
+*.log
+dist/

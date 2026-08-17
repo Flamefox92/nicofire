@@ -1,0 +1,15 @@
+services:
+  vault:
+    build: .
+    container_name: nicofire-vault
+    ports:
+      - "127.0.0.1:3000:3000"   # localhost only — never exposed to the network
+    volumes:
+      - nicofire-data:/app/data  # encrypted vault.json persists here
+    environment:
+      - VAULT_DIR=/app/data
+    restart: unless-stopped
+
+volumes:
+  nicofire-data:
+    name: nicofire-data

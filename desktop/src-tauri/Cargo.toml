@@ -1,0 +1,40 @@
+[package]
+name    = "nicofire"
+version = "2.1.0"
+edition = "2021"
+
+[lib]
+name       = "nicofire_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "=2.6.3", features = [] }
+
+# ── Dependencies pinned to EXACT versions for reproducible builds ──────────────
+# These are the versions verified to compile cleanly together. The '=' prefix
+# locks each to that exact version (not "0.10.x or newer"). Combined with the
+# shipped Cargo.lock, this guarantees an identical build on any machine, forever.
+[dependencies]
+tauri      = { version = "=2.11.5", features = ["tray-icon", "image-png"] }
+serde      = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.150"
+aes-gcm    = "=0.10.3"
+argon2     = "=0.5.3"
+pbkdf2     = { version = "=0.12.2", features = ["hmac"] }
+sha2       = "=0.10.9"
+sha1       = "=0.10.6"
+hmac       = "=0.12.1"
+rand       = "=0.8.6"
+hex        = "=0.4.3"
+base32     = "=0.5.1"
+dirs       = "=5.0.1"
+uuid       = { version = "=1.23.4", features = ["v4"] }
+chrono     = { version = "=0.4.45", features = ["serde"] }
+zeroize    = "=1.9.0"
+
+[profile.release]
+opt-level     = 3
+lto           = true
+codegen-units = 1
+panic         = "abort"
+strip         = true

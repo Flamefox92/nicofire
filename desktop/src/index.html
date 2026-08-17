@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NICOFIRE</title>
+<style>
+/* ═══════════════════ DESIGN TOKENS ═══════════════════ */
+:root{
+  --ember:#ff6b2c; --ember-soft:#ff8c55; --violet:#7c5cff; --violet-soft:#a98bff;
+  --grad-fire:linear-gradient(135deg,#7c5cff 0%,#ff6b2c 100%);
+  --grad-glow:linear-gradient(135deg,rgba(124,92,255,.15),rgba(255,107,44,.15));
+  --ok:#3ddc84; --warn:#ffb648; --bad:#ff5470;
+  --r-lg:18px; --r-md:12px; --r-sm:8px;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0a0912; --bg2:#12101d; --surf:#181527; --surf2:#211d35;
+  --line:#2a2540; --txt:#ece9f5; --txt2:#9a92c0; --txt3:#615a85;
+  --inp:#1d1930;
+}
+[data-theme="light"]{
+  --bg:#f6f4ff; --bg2:#efe9ff; --surf:#ffffff; --surf2:#f4f0ff;
+  --line:#e2dbff; --txt:#1a1530; --txt2:#5c5486; --txt3:#9a92c0;
+  --inp:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--txt);font-size:14px;overflow:hidden;
+  -webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--txt3)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ═══════════════════ LOCK SCREEN ═══════════════════ */
+#lock{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at top,#1a1530,var(--bg));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px}
+.lock-flame{font-size:64px;filter:drop-shadow(0 8px 32px rgba(255,107,44,.5));animation:flicker 3s ease-in-out infinite}
+@keyframes flicker{0%,100%{transform:scale(1) rotate(-1deg)}50%{transform:scale(1.05) rotate(1deg)}}
+.lock-brand{font-size:34px;font-weight:800;letter-spacing:2px;
+  background:var(--grad-fire);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lock-tag{font-size:13px;color:var(--txt2);margin-top:-14px;letter-spacing:.5px}
+.lock-box{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.lock-input{width:100%;background:var(--inp);border:1.5px solid var(--line);border-radius:var(--r-md);
+  color:var(--txt);font-size:15px;padding:14px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.lock-input:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(124,92,255,.15)}
+.lock-err{color:var(--bad);font-size:12px;min-height:16px;text-align:center}
+.btn-fire{background:var(--grad-fire);color:#fff;border-radius:var(--r-md);font-size:15px;
+  font-weight:600;padding:14px;transition:transform .1s,box-shadow .2s;box-shadow:0 4px 20px rgba(124,92,255,.3)}
+.btn-fire:hover{box-shadow:0 6px 28px rgba(255,107,44,.4)}
+.btn-fire:active{transform:scale(.98)}
+.lock-hint{font-size:11px;color:var(--txt3);text-align:center;margin-top:4px}
+
+/* ═══════════════════ APP SHELL ═══════════════════ */
+#app{display:none;height:100vh;grid-template-columns:230px 1fr}
+#app.show{display:grid}
+
+/* Sidebar */
+.side{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
+.side-brand .f{font-size:22px}
+.side-brand .n{font-size:18px;font-weight:800;letter-spacing:1px;
+  background:var(--grad-fire);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.side-search{width:100%;background:var(--inp);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--txt2);font-size:12px;padding:9px 12px;text-align:left;display:flex;align-items:center;
+  gap:8px;margin-bottom:16px;transition:border-color .2s}
+.side-search:hover{border-color:var(--violet)}
+.side-search kbd{margin-left:auto;background:var(--surf2);border:1px solid var(--line);border-radius:4px;
+  padding:1px 6px;font-size:10px;color:var(--txt3);font-family:inherit}
+.nav-group{margin-bottom:8px}
+.nav-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--txt3);padding:8px 10px 4px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-sm);
+  color:var(--txt2);font-size:13px;transition:background .15s,color .15s;width:100%;text-align:left}
+.nav-item:hover{background:var(--surf);color:var(--txt)}
+.nav-item.active{background:var(--grad-glow);color:var(--txt);font-weight:600}
+.nav-item .ic{font-size:15px;width:18px;text-align:center}
+.nav-item .ct{margin-left:auto;font-size:11px;color:var(--txt3);background:var(--surf2);
+  border-radius:10px;padding:1px 7px;min-width:20px;text-align:center}
+.side-foot{margin-top:auto;display:flex;gap:6px;padding-top:12px}
+.side-foot button{flex:1;background:var(--surf);border:1px solid var(--line);border-radius:var(--r-sm);
+  color:var(--txt2);padding:8px;font-size:13px;transition:all .15s}
+.side-foot button:hover{border-color:var(--violet);color:var(--txt)}
+
+/* Main */
+.main{overflow-y:auto;padding:24px 30px;position:relative}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.topbar h1{font-size:22px;font-weight:700}
+.topbar .sub{font-size:12px;color:var(--txt2);margin-top:2px}
+.lock-timer{font-size:11px;color:var(--txt3);display:flex;align-items:center;gap:6px}
+.lock-timer .dot{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+
+/* ═══════════════════ DASHBOARD ═══════════════════ */
+.dash-hero{background:var(--grad-glow);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:26px;display:flex;align-items:center;gap:28px;margin-bottom:20px}
+.score-ring{position:relative;width:120px;height:120px;flex-shrink:0}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring .num{font-size:32px;font-weight:800}
+.score-ring .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
+.hero-info h2{font-size:20px;margin-bottom:6px}
+.hero-info p{font-size:13px;color:var(--txt2);line-height:1.6;max-width:420px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px}
+.stat .n{font-size:26px;font-weight:800}
+.stat .l{font-size:11px;color:var(--txt2);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.stat.warn .n{color:var(--warn)} .stat.bad .n{color:var(--bad)} .stat.ok .n{color:var(--ok)}
+.issue-sec h3{font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+/* ═══════════════════ CREDENTIAL GRID ═══════════════════ */
+.cred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.cred{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;
+  cursor:pointer;transition:transform .12s var(--ease),border-color .15s,box-shadow .15s;position:relative}
+.cred:hover{transform:translateY(-2px);border-color:var(--violet);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.cred-top{display:flex;align-items:center;gap:11px;margin-bottom:10px}
+.avatar{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.cred-name{flex:1;min-width:0}
+.cred-name .t{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cred-name .u{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.fav{position:absolute;top:12px;right:12px;font-size:13px;color:var(--txt3);transition:color .15s}
+.fav.on{color:var(--warn)}
+.cred-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tag{font-size:10px;background:var(--surf2);border:1px solid var(--line);border-radius:6px;
+  padding:2px 7px;color:var(--txt2)}
+.cred-acts{display:flex;gap:6px;margin-top:10px;opacity:0;transition:opacity .15s}
+.cred:hover .cred-acts{opacity:1}
+.mini{flex:1;background:var(--surf2);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:6px;font-size:11px;color:var(--txt2);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.mini:hover{border-color:var(--violet);color:var(--txt)}
+.mini.ok{color:var(--ok);border-color:var(--ok)}
+.totp-chip{display:flex;align-items:center;gap:6px;margin-top:8px;background:var(--surf2);
+  border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 10px}
+.totp-code{font-family:"Consolas",monospace;font-size:15px;font-weight:700;letter-spacing:2px;color:var(--ember-soft)}
+.totp-ring{width:16px;height:16px}
+
+.empty{text-align:center;padding:60px 20px;color:var(--txt2)}
+.empty .e{font-size:48px;margin-bottom:14px}
+.empty p{font-size:14px;line-height:1.6}
+
+/* ═══════════════════ SPOTLIGHT ═══════════════════ */
+#spot{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  display:none;align-items:flex-start;justify-content:center;padding-top:14vh}
+#spot.show{display:flex}
+.spot-box{width:100%;max-width:560px;background:var(--surf);border:1px solid var(--line);
+  border-radius:var(--r-lg);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5);animation:spotIn .18s var(--ease)}
+@keyframes spotIn{from{opacity:0;transform:translateY(-12px) scale(.98)}to{opacity:1;transform:none}}
+.spot-in{width:100%;background:none;border:none;border-bottom:1px solid var(--line);
+  color:var(--txt);font-size:17px;padding:18px 22px;outline:none}
+.spot-in::placeholder{color:var(--txt3)}
+.spot-results{max-height:52vh;overflow-y:auto}
+.spot-item{display:flex;align-items:center;gap:12px;padding:11px 18px;cursor:pointer}
+.spot-item.sel{background:var(--grad-glow)}
+.spot-item .av{width:32px;height:32px;border-radius:9px;font-size:12px}
+.spot-item .txt{flex:1;min-width:0}
+.spot-item .t{font-size:14px;font-weight:600}
+.spot-item .u{font-size:11px;color:var(--txt2)}
+.spot-item .hint{font-size:10px;color:var(--txt3)}
+.spot-empty{padding:30px;text-align:center;color:var(--txt3);font-size:13px}
+
+/* ═══════════════════ MODAL ═══════════════════ */
+.modal{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.modal.show{display:flex}
+.modal-box{width:100%;max-width:460px;max-height:88vh;overflow-y:auto;background:var(--surf);
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;animation:spotIn .2s var(--ease)}
+.modal-hd{display:flex;align-items:center;margin-bottom:18px}
+.modal-hd h2{font-size:17px;font-weight:700}
+.modal-hd .x{margin-left:auto;font-size:18px;color:var(--txt2);padding:4px 8px;border-radius:6px}
+.modal-hd .x:hover{background:var(--surf2);color:var(--txt)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;color:var(--txt2);margin-bottom:5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{width:100%;background:var(--inp);border:1.5px solid var(--line);
+  border-radius:var(--r-sm);color:var(--txt);font-size:13px;padding:10px 12px;outline:none;transition:border-color .2s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--violet)}
+.field textarea{resize:vertical;min-height:60px}
+.pw-field{position:relative}
+.pw-field input{padding-right:76px}
+.pw-btns{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;gap:2px}
+.pw-btns button{color:var(--txt2);padding:4px 6px;font-size:14px;border-radius:5px}
+.pw-btns button:hover{color:var(--violet);background:var(--surf2)}
+.strength{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.strength .fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+.strength-lbl{font-size:10px;margin-top:3px}
+.modal-foot{display:flex;gap:10px;margin-top:20px}
+.modal-foot button{flex:1;padding:11px;border-radius:var(--r-sm);font-size:14px;font-weight:600}
+.btn-ghost{background:var(--surf2);border:1px solid var(--line);color:var(--txt2)}
+.btn-ghost:hover{color:var(--txt)}
+.form-err{color:var(--bad);font-size:12px;min-height:16px;margin-top:8px}
+
+/* Generator inline */
+.gen-panel{background:var(--surf2);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;margin-top:10px}
+.gen-out{font-family:"Consolas",monospace;font-size:15px;word-break:break-all;background:var(--inp);
+  border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:12px;min-height:40px;
+  display:flex;align-items:center;color:var(--ember-soft)}
+.gen-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:var(--txt2)}
+.gen-row input[type=range]{flex:1;accent-color:var(--violet)}
+.gen-toggles{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.gen-tog{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt2);cursor:pointer}
+.gen-tog input{accent-color:var(--violet)}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surf2);
+  border:1px solid var(--violet);border-radius:var(--r-md);padding:12px 20px;font-size:13px;z-index:300;
+  opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.3);
+  display:flex;align-items:center;gap:8px}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+/* Chips input */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{font-size:11px;background:var(--grad-glow);border:1px solid var(--violet);border-radius:6px;
+  padding:3px 8px;display:flex;align-items:center;gap:5px;color:var(--txt)}
+.chip button{color:var(--txt2);font-size:12px}
+
+.section{display:none} .section.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- ══════ LOCK ══════ -->
+<div id="lock">
+  <div class="lock-flame">🔥</div>
+  <div class="lock-brand">NICOFIRE</div>
+  <div class="lock-tag">Private · Encrypted · Local</div>
+  <div class="lock-box">
+    <input id="master" class="lock-input" type="password" placeholder="Master password" autocomplete="current-password">
+    <div class="lock-err" id="lockErr"></div>
+    <button class="btn-fire" id="unlockBtn">Unlock Vault</button>
+    <div class="lock-hint" id="lockHint">Checking vault…</div>
+  </div>
+</div>
+
+<!-- ══════ APP ══════ -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="side">
+    <div class="side-brand"><span class="f">🔥</span><span class="n">NICOFIRE</span></div>
+    <button class="side-search" id="openSpot">🔍 Quick search <kbd>Ctrl K</kbd></button>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Vault</div>
+      <button class="nav-item active" data-sec="dashSec"><span class="ic">📊</span>Dashboard</button>
+      <button class="nav-item" data-sec="allSec"><span class="ic">🔑</span>All Items<span class="ct" id="ctAll">0</span></button>
+      <button class="nav-item" data-sec="favSec"><span class="ic">⭐</span>Favorites<span class="ct" id="ctFav">0</span></button>
+    </div>
+
+    <div class="nav-group" id="folderNav">
+      <div class="nav-lbl">Folders</div>
+      <!-- folders injected -->
+    </div>
+
+    <div class="side-foot">
+      <button id="addBtn" title="Add credential">➕</button>
+      <button id="genBtn" title="Generator">⚡</button>
+      <button id="setBtn" title="Settings">⚙️</button>
+      <button id="lockAppBtn" title="Lock now">🔒</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="secTitle">Dashboard</h1>
+        <div class="sub" id="secSub">Your vault at a glance</div>
+      </div>
+      <div class="lock-timer"><span class="dot"></span><span id="lockCountdown">5:00</span></div>
+    </div>
+
+    <!-- Dashboard -->
+    <section class="section active" id="dashSec">
+      <div class="dash-hero">
+        <div class="score-ring">
+          <svg width="120" height="120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="9"/>
+            <circle id="scoreArc" cx="60" cy="60" r="52" fill="none" stroke="url(#g)" stroke-width="9"
+              stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"/>
+            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#ff6b2c"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="val"><div class="num" id="scoreNum">–</div><div class="lbl">Health</div></div>
+        </div>
+        <div class="hero-info">
+          <h2 id="healthTitle">Vault Health</h2>
+          <p id="healthMsg">Analysing your credentials for weak, reused, and aging passwords…</p>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="stTotal">0</div><div class="l">Total items</div></div>
+        <div class="stat bad"><div class="n" id="stWeak">0</div><div class="l">Weak</div></div>
+        <div class="stat warn"><div class="n" id="stReused">0</div><div class="l">Reused</div></div>
+        <div class="stat warn"><div class="n" id="stOld">0</div><div class="l">Over 1 yr old</div></div>
+      </div>
+      <div class="issue-sec">
+        <h3>⚠️ Needs attention</h3>
+        <div class="cred-grid" id="issueGrid"></div>
+      </div>
+    </section>
+
+    <!-- All / Fav / Folder share this -->
+    <section class="section" id="allSec"><div class="cred-grid" id="allGrid"></div></section>
+    <section class="section" id="favSec"><div class="cred-grid" id="favGrid"></div></section>
+    <section class="section" id="folderSec"><div class="cred-grid" id="folderGrid"></div></section>
+  </main>
+</div>
+
+<!-- ══════ SPOTLIGHT ══════ -->
+<div id="spot">
+  <div class="spot-box">
+    <input class="spot-in" id="spotIn" placeholder="Search credentials, folders, tags…" autocomplete="off">
+    <div class="spot-results" id="spotResults"></div>
+  </div>
+</div>
+
+<!-- ══════ ADD/EDIT MODAL ══════ -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div class="modal-hd"><h2 id="editTitle">Add credential</h2><button class="x" id="editClose">✕</button></div>
+    <div class="field"><label>Website</label><input id="eSite" placeholder="github.com"></div>
+    <div class="field"><label>Label (optional)</label><input id="eLabel" placeholder="Work account"></div>
+    <div class="field"><label>Username / Email</label><input id="eUser" autocomplete="off"></div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pw-field">
+        <input id="ePass" type="password" autocomplete="off">
+        <div class="pw-btns"><button id="eTog">👁</button><button id="eGen">⚡</button></div>
+      </div>
+      <div class="strength"><div class="fill" id="eStr"></div></div>
+      <div class="strength-lbl" id="eStrLbl"></div>
+    </div>
+    <div class="field"><label>Folder (optional)</label><input id="eFolder" placeholder="Personal, Work…"></div>
+    <div class="field"><label>Tags (Enter to add)</label>
+      <input id="eTagIn" placeholder="Type a tag and press Enter">
+      <div class="chips" id="eChips"></div>
+    </div>
+    <div class="field"><label>2FA secret (optional, base32)</label><input id="eTotp" placeholder="JBSWY3DPEHPK3PXP" autocomplete="off"></div>
+    <div class="field"><label>Notes (optional)</label><textarea id="eNotes"></textarea></div>
+    <div class="form-err" id="editErr"></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="editCancel">Cancel</button>
+      <button class="btn-fire" id="editSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ GENERATOR MODAL ══════ -->
+<div class="modal" id="genModal">
+  <div class="modal-box">
+    <div class="modal-hd"><h2>⚡ Password generator</h2><button class="x" id="genClose">✕</button></div>
+    <div class="gen-panel">
+      <div class="gen-out" id="genOut">–</div>
+      <div class="gen-row">Length <input type="range" id="genLen" min="8" max="40" value="20"><span id="genLenV">20</span></div>
+      <div class="gen-toggles">
+        <label class="gen-tog"><input type="checkbox" id="genUp" checked>A-Z</label>
+        <label class="gen-tog"><input type="checkbox" id="genLo" checked>a-z</label>
+        <label class="gen-tog"><input type="checkbox" id="genDi" checked>0-9</label>
+        <label class="gen-tog"><input type="checkbox" id="genSy" checked>!@#</label>
+      </div>
+      <div class="modal-foot" style="margin-top:6px">
+        <button class="btn-ghost" id="genRefresh">🔄 Regenerate</button>
+        <button class="btn-fire" id="genCopy">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ SETTINGS MODAL ══════ -->
+<div class="modal" id="setModal">
+  <div class="modal-box">
+    <div class="modal-hd"><h2>⚙️ Settings</h2><button class="x" id="setClose">✕</button></div>
+    <div class="field"><label>Theme</label>
+      <select id="setTheme"><option value="dark">Dark</option><option value="light">Light</option></select>
+    </div>
+    <div class="field"><label>Auto-lock after (minutes)</label>
+      <select id="setLock"><option value="1">1</option><option value="5">5</option><option value="15">15</option><option value="30">30</option><option value="0">Never</option></select>
+    </div>
+    <div class="field"><label>Clear clipboard after (seconds)</label>
+      <select id="setClip"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="0">Never</option></select>
+    </div>
+    <h2 style="font-size:14px;margin:20px 0 12px">Change master password</h2>
+    <div class="field"><input id="mpCur" type="password" placeholder="Current password"></div>
+    <div class="field"><input id="mpNew" type="password" placeholder="New password"></div>
+    <div class="field"><input id="mpCf" type="password" placeholder="Confirm new password"></div>
+    <div class="form-err" id="mpErr"></div>
+    <button class="btn-fire" id="mpBtn" style="width:100%;padding:11px;border-radius:8px">Update password</button>
+    <h2 style="font-size:14px;margin:20px 0 12px">Backup &amp; restore</h2>
+    <p style="font-size:11px;color:var(--txt2);margin-bottom:10px;line-height:1.5">
+      Encrypted backup is protected by a passphrase and safe to store anywhere.
+      Plain JSON is <b style="color:var(--bad)">unencrypted</b> — only use it if you understand the risk.</p>
+    <div class="modal-foot" style="margin-top:0;margin-bottom:8px">
+      <button class="btn-fire" id="expEncBtn">🔒 Encrypted backup</button>
+      <button class="btn-ghost" id="impEncBtn">🔓 Restore backup</button>
+    </div>
+    <div class="modal-foot" style="margin-top:0">
+      <button class="btn-ghost" id="expBtn" style="font-size:11px">⚠ Plain JSON export</button>
+      <button class="btn-ghost" id="impBtn" style="font-size:11px">Plain JSON import</button>
+    </div>
+    <input type="file" id="impFile" accept=".json" style="display:none">
+    <input type="file" id="impEncFile" accept=".json,.ncf" style="display:none">
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
