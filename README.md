@@ -16,7 +16,6 @@ Built-in secure password generator with rules
 Built-in TOTP / 2FA code generator (RFC 6238)
 Change master password (re-encrypts everything)
 Interface
-
 Dashboard with animated health score ring
 Spotlight-style quick search (Ctrl+K)
 Folders, tags, and favorites
@@ -28,12 +27,19 @@ Keyboard shortcuts
 Ctrl+K — Quick search
 Ctrl+N — Add credential
 Esc — Close dialogs
+
+
+
+
 Build & run
 # Prerequisites (one-time): Rust, Node.js, MS C++ Build Tools
 cd nicofire-v2
 npm install
 npm run dev        # development
 npm run build      # production installer → src-tauri/target/release/bundle/
+
+
+
 Where is my data?
 Encrypted vault: %APPDATA%\NICOFIRE\vault.json This file is useless without your master password.
 
